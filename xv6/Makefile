@@ -5,7 +5,6 @@ OBJS = \
 	file.o\
 	fs.o\
 	ide.o\
-	bios_int.o\
 	ioapic.o\
 	kalloc.o\
 	kbd.o\
@@ -28,6 +27,7 @@ OBJS = \
 	uart.o\
 	vectors.o\
 	vm.o\
+	bios_int.o\
 
 # Cross-compiling (e.g., on Mac OS X)
 # TOOLPREFIX = i386-jos-elf
@@ -113,7 +113,7 @@ initcode: initcode.S
 	$(OBJDUMP) -S initcode.o > initcode.asm
 
 int32.o: int32.nasm
-	nasm -f elf32 int32.nasm -o int32.o
+	    nasm -f elf32 int32.nasm -o int32.o
 
 kernel: $(OBJS) entry.o entryother initcode kernel.ld int32.o
 	$(LD) $(LDFLAGS) -T kernel.ld -o kernel entry.o int32.o $(OBJS) -b binary initcode entryother
@@ -166,12 +166,10 @@ UPROGS=\
 	_forktest\
 	_grep\
 	_init\
-	_imshow\
 	_kill\
 	_ln\
 	_ls\
 	_mkdir\
-	_prettyprint\
 	_rm\
 	_sh\
 	_stressfs\
@@ -179,8 +177,8 @@ UPROGS=\
 	_wc\
 	_zombie\
 
-fs.img: mkfs README cover.raw $(UPROGS)
-	./mkfs fs.img README cover.raw $(UPROGS)
+fs.img: mkfs README $(UPROGS)
+	./mkfs fs.img README $(UPROGS)
 
 -include *.d
 
@@ -278,6 +276,6 @@ tar:
 	rm -rf /tmp/xv6
 	mkdir -p /tmp/xv6
 	cp dist/* dist/.gdbinit.tmpl /tmp/xv6
-	(cd /tmp; tar cf - xv6) | gzip >xv6-rev5.tar.gz
+	(cd /tmp; tar cf - xv6) | gzip >xv6-rev9.tar.gz  # the next one will be 9 (6/27/15)
 
 .PHONY: dist-test dist

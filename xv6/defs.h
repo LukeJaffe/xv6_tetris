@@ -19,7 +19,6 @@ void            bwrite(struct buf*);
 void            consoleinit(void);
 void            cprintf(char*, ...);
 void            consoleintr(int(*)(void));
-int             consoleioctl(struct file *,int,int);
 void            panic(char*) __attribute__((noreturn));
 
 // exec.c
@@ -28,7 +27,6 @@ int             exec(char*, char**);
 // file.c
 struct file*    filealloc(void);
 void            fileclose(struct file*);
-int             fileioctl(struct file*, int, int);
 struct file*    filedup(struct file*);
 void            fileinit(void);
 int             fileread(struct file*, char*, int n);
@@ -41,7 +39,7 @@ int             dirlink(struct inode*, char*, uint);
 struct inode*   dirlookup(struct inode*, char*, uint*);
 struct inode*   ialloc(uint, short);
 struct inode*   idup(struct inode*);
-void            iinit(void);
+void            iinit(int dev);
 void            ilock(struct inode*);
 void            iput(struct inode*);
 void            iunlock(struct inode*);
@@ -83,7 +81,7 @@ void            lapicstartap(uchar, uint);
 void            microdelay(int);
 
 // log.c
-void            initlog(void);
+void            initlog(int dev);
 void            log_write(struct buf*);
 void            begin_op();
 void            end_op();

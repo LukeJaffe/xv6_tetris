@@ -29,14 +29,13 @@ struct inode {
 // table mapping major device number to
 // device functions
 struct devsw {
-  int (*read)(struct file*, char*, int);
-  int (*write)(struct file*, char*, int);
+  int (*read)(struct inode*, char*, int);
+  int (*write)(struct inode*, char*, int);
 };
 
 extern struct devsw devsw[];
 
 #define CONSOLE 1
-#define DISPLAY 2
 
 //PAGEBREAK!
 // Blank page.

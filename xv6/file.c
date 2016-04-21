@@ -5,12 +5,9 @@
 #include "types.h"
 #include "defs.h"
 #include "param.h"
-#include "stat.h"
 #include "fs.h"
 #include "file.h"
 #include "spinlock.h"
-#include "mmu.h"
-#include "int32.h"
 
 struct devsw devsw[NDEV];
 struct {
@@ -81,23 +78,6 @@ fileclose(struct file *f)
   }
 }
 
-int
-fileioctl(struct file *f, int param, int value) 
-{  
-    regs16_t regs = { .ax = value };
-    switch(f->ip->major) 
-    {
-        case CONSOLE:
-            return consoleioctl(f,param,value);
-        case DISPLAY:
-            bios_int(0x10, &regs);
-            return 0;
-        default:
-            cprintf("Got unknown IOCTL for dev=%d, major=%d, minor=%d, %d=%d\n",f->ip->dev,(int)f->ip->major,(int)f->ip->minor,param,value);
-        return -1;
-    }
-}
-
 // Get metadata about file f.
 int
 filestat(struct file *f, struct stat *st)
@@ -121,14 +101,7 @@ fileread(struct file *f, char *addr, int n)
     return -1;
   if(f->type == FD_PIPE)
     return piperead(f->pipe, addr, n);
-  if(f->type == FD_INODE) {
-
-    if(f->ip->type == T_DEV){
-      if(f->ip->major < 0 || f->ip->major >= NDEV || !devsw[f->ip->major].read)
-        return -1;
-      return devsw[f->ip->major].read(f, addr, n);
-    }
-
+  if(f->type == FD_INODE){
     ilock(f->ip);
     if((r = readi(f->ip, addr, f->off, n)) > 0)
       f->off += r;
@@ -146,40 +119,16 @@ filewrite(struct file *f, char *addr, int n)
   int r;
 
   if(f->writable == 0)
-  {
-    panic("filewrite: file is not writeable");
     return -1;
-  }
-
   if(f->type == FD_PIPE)
     return pipewrite(f->pipe, addr, n);
   if(f->type == FD_INODE){
-
-    if(f->ip->type == T_DEV)
-    {
-      if (f->ip->major < 0)
-      {
-        panic("filewrite: f->ip->major < 0");
-        return -1;
-      }
-      if (f->ip->major >= NDEV)
-      {
-        panic("filewrite: f->ip->major >= NDEV");
-        return -1;
-      }
-      if (!devsw[f->ip->major].write)
-      {
-        panic("filewrite: !devsw[f->ip->major].write");
-        return -1;
-      }
-      return devsw[f->ip->major].write(f, addr, n);
-    }
-
-
     // write a few blocks at a time to avoid exceeding
     // the maximum log transaction size, including
     // i-node, indirect block, allocation blocks,
     // and 2 blocks of slop for non-aligned writes.
+    // this really belongs lower down, since writei()
+    // might be writing a device like the console.
     int max = ((LOGSIZE-1-1-2) / 2) * 512;
     int i = 0;
     while(i < n){
