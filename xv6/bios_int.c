@@ -4,12 +4,16 @@
 #include "int32.h"
 #include "memlayout.h"
 
-void bios_int(unsigned char intnum, regs16_t* regs) {
-  pushcli();
+void bios_int(unsigned char intnum, unsigned char regs_ax) 
+{
+    struct regs16 regs;
+    regs.ax = regs_ax;
 
-  pte_t original = biosmap();
-  int32(intnum,regs);  
-  biosunmap(original);
+    pushcli();
 
-  popcli();
+    pte_t original = biosmap();
+    int32(intnum, &regs);  
+    biosunmap(original);
+
+    popcli();
 }

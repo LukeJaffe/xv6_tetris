@@ -176,6 +176,7 @@ UPROGS=\
 	_usertests\
 	_wc\
 	_zombie\
+	_draw\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
@@ -212,9 +213,9 @@ QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \
 	then echo "-gdb tcp::$(GDBPORT)"; \
 	else echo "-s -p $(GDBPORT)"; fi)
 ifndef CPUS
-CPUS := 2
+CPUS := 1
 endif
-QEMUOPTS = -hdb fs.img xv6.img -smp $(CPUS) -m 512 $(QEMUEXTRA)
+QEMUOPTS = -hdb fs.img xv6.img -smp $(CPUS) -m 512 $(QEMUEXTRA) -snapshot
 
 qemu: fs.img xv6.img
 	$(QEMU) -serial mon:stdio $(QEMUOPTS)

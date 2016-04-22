@@ -1,5 +1,6 @@
 struct stat;
 struct rtcdate;
+struct regs16;
 
 // system calls
 int fork(void);
@@ -23,6 +24,9 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
+int mode(int*, int*, struct regs16*);
+int draw(int);
+int drawbuf(char*);
 
 // ulib.c
 int stat(char*, struct stat*);

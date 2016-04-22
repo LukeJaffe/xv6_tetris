@@ -220,7 +220,8 @@ wait(void)
   int havekids, pid;
 
   acquire(&ptable.lock);
-  for(;;){
+  for(;;)
+  {
     // Scan through table looking for zombie children.
     havekids = 0;
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
@@ -248,6 +249,10 @@ wait(void)
       release(&ptable.lock);
       return -1;
     }
+
+    // Do some work for the interrupt handler
+    if (proc == initproc)
+        cprintf("Wake up!\n");
 
     // Wait for children to exit.  (See wakeup1 call in proc_exit.)
     sleep(proc, &ptable.lock);  //DOC: wait-sleep

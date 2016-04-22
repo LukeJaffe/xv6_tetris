@@ -14,8 +14,6 @@
 #include "file.h"
 #include "fcntl.h"
 
-#include "memlayout.h"
-#include "int32.h"
 
 // Fetch the nth word-sized system call argument as a file descriptor
 // and return both the descriptor and the corresponding struct file.
@@ -336,24 +334,6 @@ sys_open(void)
 int
 sys_mkdir(void)
 {
-     int i, y;
-
-  regs16_t regs;
-
-  regs.ax = 0x13;
-  bios_int(0x10,&regs);
-
-  memset((char *)P2V(0xA0000), 1, (320*200));
-  for(y = 0; y < 200; y++)
-    memset((char *)P2V(0xA0000) + (y*320+80), y, 80);
-
-  for(i=0;i<10000000;i++);
-
-  regs.ax = 0x3;
-  bios_int(0x10,&regs);
-
-    return 0;
-    /*
   char *path;
   struct inode *ip;
 
@@ -365,7 +345,6 @@ sys_mkdir(void)
   iunlockput(ip);
   end_op();
   return 0;
-  */
 }
 
 int
