@@ -1,9 +1,6 @@
 #include "types.h"
 #include "user.h"
 
-#include "mmu.h" //pte_t for int32.h
-#include "int32.h"
-
 #include "tetris.h"
 
 // buffer must be outside of function scope because of stack memory limit?
@@ -15,7 +12,7 @@ main(int argc, char** argv)
     int i, j;
 
     //if (mode(&n, &pte, &regs) < 0)
-    
+
     // populate the screen buffer
         
     uint addr;
@@ -29,10 +26,10 @@ main(int argc, char** argv)
         for (j = 0; j < SCREEN_WIDTH*SCREEN_HEIGHT; j++)
             buf[j] = 0; 
 
-        tet_t tet = {.x = 100, .y = i, .r = i/25, .t = TET_L};
-        //draw_block(buf, i, 0, 2);
-        draw_tet(buf, &tet);
-
+        //tet_t tet = {.x = 100, .y = i, .r = i/25, .t = TET_L};
+        //draw_tet(buf, &tet);
+        //tetris();
+        draw();
         drawbuf((char*)buf);
         //sleep(10);
     }

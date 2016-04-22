@@ -12,8 +12,6 @@ struct {
   struct proc proc[NPROC];
 } ptable;
 
-static struct proc *initproc;
-
 int nextpid = 1;
 extern void forkret(void);
 extern void trapret(void);
@@ -251,8 +249,15 @@ wait(void)
     }
 
     // Do some work for the interrupt handler
+    // This assumes no one else is calling wakeup (besides keyhandler)
     if (proc == initproc)
-        cprintf("Wake up!\n");
+    {
+        //cprintf("Keycode: %d\n", keycode);
+        if (keycode == 226)
+           cprintf("UP\n"); 
+        else if (keycode == 227)
+           cprintf("DOWN\n"); 
+    }
 
     // Wait for children to exit.  (See wakeup1 call in proc_exit.)
     sleep(proc, &ptable.lock);  //DOC: wait-sleep

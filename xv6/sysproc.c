@@ -8,6 +8,8 @@
 #include "proc.h"
 #include "int32.h"
 
+#include "tetris.h"
+
 int
 sys_fork(void)
 {
@@ -119,27 +121,7 @@ sys_mode(void)
 int
 sys_draw(void)
 {
-    int n;
-    if(argint(0, &n) < 0)
-        return -1;
-
-    //bios_int(0x10, 0x13);
-    struct regs16 regs = { .ax = 0x13};
-    pushcli();
-    pte_t original = biosmap();
-    int32(0x10, &regs);  
-    biosunmap(original);
-    popcli();
-
-    memset((char *)P2V(0xA0000), n, (320*200));
-    //for(y = 0; y < 200; y++)
-    //memset((char *)P2V(0xA0000) + (y*320+80), y, 80);
-
-    //int i;
-    //for(i=0;i<10000000;i++);
-
-    //bios_int(0x10, 0x3);
-
+    tetris();
     return 0;
 }
 

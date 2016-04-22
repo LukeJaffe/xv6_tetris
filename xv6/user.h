@@ -25,7 +25,7 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int mode(int*, int*, struct regs16*);
-int draw(int);
+int draw();
 int drawbuf(char*);
 
 // ulib.c

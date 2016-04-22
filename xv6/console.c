@@ -193,7 +193,14 @@ consoleintr(int (*getc)(void))
 
   acquire(&cons.lock);
   while((c = getc()) >= 0){
+    keycode = c;
     switch(c){
+    case 226:
+        wakeup(initproc);
+        break;
+    case 227:
+        wakeup(initproc);
+        break;
     case C('P'):  // Process listing.
       doprocdump = 1;   // procdump() locks cons.lock indirectly; invoke later
       break;
