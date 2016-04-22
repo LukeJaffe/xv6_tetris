@@ -41,7 +41,7 @@ void draw_block(char* buf, int x, int y, int c)
     int i, j;
     for (i = x+1; i < x+BLOCK_WIDTH; i++)
         for (j = y+1; j < y+BLOCK_HEIGHT; j++)
-            buf[SCREEN_WIDTH*i+j] = c;
+            buf[SCREEN_WIDTH*j+i] = c;
 }
 
 void draw_tet(char* buf, tet_t* tet)
@@ -81,15 +81,19 @@ void draw_tet_i(char* buf, tet_t* tet)
     {
         case 0:
             for (i = 0; i < 4; i++)
-            {
-                draw_block(buf, tet->x + i*BLOCK_WIDTH, tet->y, 2);
-            }
+                draw_block(buf, tet->x + i*BLOCK_WIDTH, tet->y + BLOCK_WIDTH, 2);
             break;
         case 1:
+            for (i = 0; i < 4; i++)
+                draw_block(buf, tet->x + 2*BLOCK_WIDTH, tet->y + i*BLOCK_WIDTH, 2);
             break;
         case 2:
+            for (i = 0; i < 4; i++)
+                draw_block(buf, tet->x + i*BLOCK_WIDTH, tet->y + 2*BLOCK_WIDTH, 2);
             break;
         case 3:
+            for (i = 0; i < 4; i++)
+                draw_block(buf, tet->x + BLOCK_WIDTH, tet->y + i*BLOCK_WIDTH, 2);
             break;
         default:
             break;
@@ -98,26 +102,175 @@ void draw_tet_i(char* buf, tet_t* tet)
 
 void draw_tet_o(char* buf, tet_t* tet)
 {
+    draw_block(buf, tet->x, tet->y, 2);
+    draw_block(buf, tet->x + BLOCK_WIDTH, tet->y, 2);
+    draw_block(buf, tet->x, tet->y + BLOCK_WIDTH, 2);
+    draw_block(buf, tet->x + BLOCK_WIDTH, tet->y + BLOCK_WIDTH, 2);
 }
 
 void draw_tet_t(char* buf, tet_t* tet)
 {
+    switch (tet->r)
+    {
+        case 0:
+            draw_block(buf, tet->x, tet->y, 2);
+            draw_block(buf, tet->x - BLOCK_WIDTH, tet->y, 2);
+            draw_block(buf, tet->x + BLOCK_WIDTH, tet->y, 2);
+            draw_block(buf, tet->x, tet->y - BLOCK_WIDTH, 2);
+            break;
+        case 1:
+            draw_block(buf, tet->x, tet->y, 2);
+            draw_block(buf, tet->x + BLOCK_WIDTH, tet->y, 2);
+            draw_block(buf, tet->x, tet->y - BLOCK_WIDTH, 2);
+            draw_block(buf, tet->x, tet->y + BLOCK_WIDTH, 2);
+            break;
+        case 2:
+            draw_block(buf, tet->x, tet->y, 2);
+            draw_block(buf, tet->x - BLOCK_WIDTH, tet->y, 2);
+            draw_block(buf, tet->x + BLOCK_WIDTH, tet->y, 2);
+            draw_block(buf, tet->x, tet->y + BLOCK_WIDTH, 2);
+            break;
+        case 3:
+            draw_block(buf, tet->x, tet->y, 2);
+            draw_block(buf, tet->x - BLOCK_WIDTH, tet->y, 2);
+            draw_block(buf, tet->x, tet->y - BLOCK_WIDTH, 2);
+            draw_block(buf, tet->x, tet->y + BLOCK_WIDTH, 2);
+            break;
+        default:
+            break;
+    }
 }
 
 void draw_tet_s(char* buf, tet_t* tet)
 {
+    switch (tet->r)
+    {
+        case 0:
+            draw_block(buf, tet->x, tet->y, 2);
+            draw_block(buf, tet->x - BLOCK_WIDTH, tet->y, 2);
+            draw_block(buf, tet->x, tet->y - BLOCK_WIDTH, 2);
+            draw_block(buf, tet->x + BLOCK_WIDTH, tet->y - BLOCK_WIDTH, 2);
+            break;
+        case 1:
+            draw_block(buf, tet->x, tet->y, 2);
+            draw_block(buf, tet->x + BLOCK_WIDTH, tet->y, 2);
+            draw_block(buf, tet->x, tet->y - BLOCK_WIDTH, 2);
+            draw_block(buf, tet->x + BLOCK_WIDTH, tet->y + BLOCK_WIDTH, 2);
+            break;
+        case 2:
+            draw_block(buf, tet->x, tet->y, 2);
+            draw_block(buf, tet->x, tet->y + BLOCK_WIDTH, 2);
+            draw_block(buf, tet->x + BLOCK_WIDTH, tet->y, 2);
+            draw_block(buf, tet->x - BLOCK_WIDTH, tet->y + BLOCK_WIDTH, 2);
+            break;
+        case 3:
+            draw_block(buf, tet->x, tet->y, 2);
+            draw_block(buf, tet->x - BLOCK_WIDTH, tet->y, 2);
+            draw_block(buf, tet->x, tet->y + BLOCK_WIDTH, 2);
+            draw_block(buf, tet->x - BLOCK_WIDTH, tet->y - BLOCK_WIDTH, 2);
+            break;
+        default:
+            break;
+    }
 }
 
 void draw_tet_z(char* buf, tet_t* tet)
 {
+    switch (tet->r)
+    {
+        case 0:
+            draw_block(buf, tet->x, tet->y, 2);
+            draw_block(buf, tet->x + BLOCK_WIDTH, tet->y, 2);
+            draw_block(buf, tet->x, tet->y - BLOCK_WIDTH, 2);
+            draw_block(buf, tet->x - BLOCK_WIDTH, tet->y - BLOCK_WIDTH, 2);
+            break;
+        case 1:
+            draw_block(buf, tet->x, tet->y, 2);
+            draw_block(buf, tet->x + BLOCK_WIDTH, tet->y, 2);
+            draw_block(buf, tet->x, tet->y + BLOCK_WIDTH, 2);
+            draw_block(buf, tet->x + BLOCK_WIDTH, tet->y - BLOCK_WIDTH, 2);
+            break;
+        case 2:
+            draw_block(buf, tet->x, tet->y, 2);
+            draw_block(buf, tet->x, tet->y + BLOCK_WIDTH, 2);
+            draw_block(buf, tet->x - BLOCK_WIDTH, tet->y, 2);
+            draw_block(buf, tet->x + BLOCK_WIDTH, tet->y + BLOCK_WIDTH, 2);
+            break;
+        case 3:
+            draw_block(buf, tet->x, tet->y, 2);
+            draw_block(buf, tet->x - BLOCK_WIDTH, tet->y, 2);
+            draw_block(buf, tet->x, tet->y - BLOCK_WIDTH, 2);
+            draw_block(buf, tet->x - BLOCK_WIDTH, tet->y + BLOCK_WIDTH, 2);
+            break;
+        default:
+            break;
+    }
 }
 
 void draw_tet_j(char* buf, tet_t* tet)
 {
+    switch (tet->r)
+    {
+        case 0:
+            draw_block(buf, tet->x, tet->y, 2);
+            draw_block(buf, tet->x - BLOCK_WIDTH, tet->y, 2);
+            draw_block(buf, tet->x + BLOCK_WIDTH, tet->y, 2);
+            draw_block(buf, tet->x - BLOCK_WIDTH, tet->y - BLOCK_WIDTH, 2);
+            break;
+        case 1:
+            draw_block(buf, tet->x, tet->y, 2);
+            draw_block(buf, tet->x, tet->y + BLOCK_WIDTH, 2);
+            draw_block(buf, tet->x, tet->y - BLOCK_WIDTH, 2);
+            draw_block(buf, tet->x + BLOCK_WIDTH, tet->y - BLOCK_WIDTH, 2);
+            break;
+        case 2:
+            draw_block(buf, tet->x, tet->y, 2);
+            draw_block(buf, tet->x - BLOCK_WIDTH, tet->y, 2);
+            draw_block(buf, tet->x + BLOCK_WIDTH, tet->y, 2);
+            draw_block(buf, tet->x + BLOCK_WIDTH, tet->y + BLOCK_WIDTH, 2);
+            break;
+        case 3:
+            draw_block(buf, tet->x, tet->y, 2);
+            draw_block(buf, tet->x, tet->y + BLOCK_WIDTH, 2);
+            draw_block(buf, tet->x, tet->y - BLOCK_WIDTH, 2);
+            draw_block(buf, tet->x - BLOCK_WIDTH, tet->y + BLOCK_WIDTH, 2);
+            break;
+        default:
+            break;
+    }
 }
 
 void draw_tet_l(char* buf, tet_t* tet)
 {
+    switch (tet->r)
+    {
+        case 0:
+            draw_block(buf, tet->x, tet->y, 2);
+            draw_block(buf, tet->x - BLOCK_WIDTH, tet->y, 2);
+            draw_block(buf, tet->x + BLOCK_WIDTH, tet->y, 2);
+            draw_block(buf, tet->x + BLOCK_WIDTH, tet->y - BLOCK_WIDTH, 2);
+            break;
+        case 1:
+            draw_block(buf, tet->x, tet->y, 2);
+            draw_block(buf, tet->x, tet->y + BLOCK_WIDTH, 2);
+            draw_block(buf, tet->x, tet->y - BLOCK_WIDTH, 2);
+            draw_block(buf, tet->x + BLOCK_WIDTH, tet->y + BLOCK_WIDTH, 2);
+            break;
+        case 2:
+            draw_block(buf, tet->x, tet->y, 2);
+            draw_block(buf, tet->x - BLOCK_WIDTH, tet->y, 2);
+            draw_block(buf, tet->x + BLOCK_WIDTH, tet->y, 2);
+            draw_block(buf, tet->x - BLOCK_WIDTH, tet->y + BLOCK_WIDTH, 2);
+            break;
+        case 3:
+            draw_block(buf, tet->x, tet->y, 2);
+            draw_block(buf, tet->x, tet->y + BLOCK_WIDTH, 2);
+            draw_block(buf, tet->x, tet->y - BLOCK_WIDTH, 2);
+            draw_block(buf, tet->x - BLOCK_WIDTH, tet->y - BLOCK_WIDTH, 2);
+            break;
+        default:
+            break;
+    }
 }
 
 #endif

@@ -29,7 +29,7 @@ main(int argc, char** argv)
         for (j = 0; j < SCREEN_WIDTH*SCREEN_HEIGHT; j++)
             buf[j] = 0; 
 
-        tet_t tet = {.x = i, .y = 0, .r = 0, .t = TET_I};
+        tet_t tet = {.x = 100, .y = i, .r = i/25, .t = TET_L};
         //draw_block(buf, i, 0, 2);
         draw_tet(buf, &tet);
 
