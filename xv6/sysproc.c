@@ -119,20 +119,26 @@ sys_mode(void)
 }
 
 int
-sys_draw(void)
+sys_clearscreen(void)
 {
-    tetris();
+    clear_screen();
     return 0;
 }
 
 int
-sys_drawbuf(void)
+sys_updatescreen(void)
 {
-    int bufaddr;
-
-    if(argint(0, &bufaddr) < 0)
+    int tptr;
+    if(argint(0, &tptr) < 0)
         return -1;
 
+    draw_tet((tet_t*)tptr);
+    return 0;
+}
+
+int
+sys_drawscreen(void)
+{
     struct regs16 regs = { .ax = 0x13};
     pushcli();
     pte_t original = biosmap();
@@ -140,7 +146,7 @@ sys_drawbuf(void)
     biosunmap(original);
     popcli();
 
-    char* buf = (char*)bufaddr;
+    char* buf = get_buf();
 
     memmove((char *)P2V(0xA0000), buf, (320*200));
 

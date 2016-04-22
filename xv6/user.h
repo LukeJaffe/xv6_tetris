@@ -2,6 +2,8 @@ struct stat;
 struct rtcdate;
 struct regs16;
 
+struct tet;
+
 // system calls
 int fork(void);
 int exit(void) __attribute__((noreturn));
@@ -25,8 +27,9 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int mode(int*, int*, struct regs16*);
-int draw();
-int drawbuf(char*);
+int clearscreen(void);
+int updatescreen(struct tet*);
+int drawscreen(void);
 
 // ulib.c
 int stat(char*, struct stat*);

@@ -99,8 +99,9 @@ extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
 extern int sys_mode(void);
-extern int sys_draw(void);
-extern int sys_drawbuf(void);
+extern int sys_clearscreen(void);
+extern int sys_updatescreen(void);
+extern int sys_drawscreen(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -125,8 +126,9 @@ static int (*syscalls[])(void) = {
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
 [SYS_mode]   sys_mode,
-[SYS_draw]   sys_draw,
-[SYS_drawbuf]   sys_drawbuf,
+[SYS_clearscreen]   sys_clearscreen,
+[SYS_updatescreen]   sys_updatescreen,
+[SYS_drawscreen]   sys_drawscreen,
 };
 
 void

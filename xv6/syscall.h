@@ -21,5 +21,6 @@
 #define SYS_mkdir       20
 #define SYS_close       21
 #define SYS_mode        22
-#define SYS_draw        23
-#define SYS_drawbuf     24
+#define SYS_clearscreen    23
+#define SYS_updatescreen   24
+#define SYS_drawscreen     25

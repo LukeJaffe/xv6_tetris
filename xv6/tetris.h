@@ -1,10 +1,12 @@
 #define SCREEN_WIDTH    (320)
 #define SCREEN_HEIGHT   (200)
 
-#define BOARD_WIDTH     (10)    // in blocks
-#define BOARD_HEIGHT    (20)    // in blocks
-#define BLOCK_WIDTH     (9)     // in pixels
-#define BLOCK_HEIGHT    (9)     // in pixels
+#define BOARD_WIDTH     (10)                // in blocks
+#define BOARD_HEIGHT    (20)                // in blocks
+#define WELL_WIDTH      (BOARD_WIDTH+2)     // in blocks
+#define WELL_HEIGHT     (BOARD_HEIGHT+2)    // in blocks
+#define BLOCK_WIDTH     (9)                 // in pixels
+#define BLOCK_HEIGHT    (9)                 // in pixels
 
 typedef enum
 {
@@ -17,7 +19,7 @@ typedef enum
     TET_L
 } tet_type_t;
 
-typedef struct
+typedef struct tet
 {
     int x;
     int y;
@@ -25,6 +27,10 @@ typedef struct
     int t;
 } tet_t;
 
-extern void draw_block(char* buf, int x, int y, int c);
-extern void draw_tet(char* buf, tet_t* tet);
-extern void tetris();
+typedef struct well
+{
+    int x;
+    int y;
+    int w;
+    int h;
+} well_t;
