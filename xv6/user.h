@@ -26,10 +26,7 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
-int mode(int*, int*, struct regs16*);
-int clearscreen(void);
-int updatescreen(struct tet*);
-int drawscreen(void);
+int tetris(void);
 
 // ulib.c
 int stat(char*, struct stat*);

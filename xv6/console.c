@@ -201,6 +201,12 @@ consoleintr(int (*getc)(void))
     case 227:
         wakeup(initproc);
         break;
+    case 228:
+        wakeup(initproc);
+        break;
+    case 229:
+        wakeup(initproc);
+        break;
     case C('P'):  // Process listing.
       doprocdump = 1;   // procdump() locks cons.lock indirectly; invoke later
       break;

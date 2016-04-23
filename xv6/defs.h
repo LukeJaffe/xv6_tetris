@@ -180,12 +180,5 @@ void            switchkvm(void);
 int             copyout(pde_t*, uint, void*, uint);
 void            clearpteu(pde_t *pgdir, char *uva);
 
-// tetris.c
-char* get_buf();
-void clear_screen();
-void draw_block(int x, int y, int c);
-void draw_tet(struct tet* tet);
-void tetris();
-
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

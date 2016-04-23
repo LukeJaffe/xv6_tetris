@@ -7,6 +7,9 @@
 #include "proc.h"
 #include "spinlock.h"
 
+#include "display.h"
+#include "systetris.h"
+
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
@@ -250,13 +253,39 @@ wait(void)
 
     // Do some work for the interrupt handler
     // This assumes no one else is calling wakeup (besides keyhandler)
-    if (proc == initproc)
+    if (proc == initproc && start_tetris)
     {
-        //cprintf("Keycode: %d\n", keycode);
+        // up key
         if (keycode == 226)
-           cprintf("UP\n"); 
+        {
+            rotate_tet();
+        }
+        // down key
         else if (keycode == 227)
-           cprintf("DOWN\n"); 
+        {
+            move_tet(TET_MOVE_DOWN);
+        }
+        // left key
+        else if (keycode == 228)
+        {
+            move_tet(TET_MOVE_LEFT);
+        }
+        // right key
+        else if (keycode == 229)
+        {
+            move_tet(TET_MOVE_RIGHT);
+        }
+        else
+        {
+
+        }
+
+        // update the display buffer
+        update_screen();
+
+        // write the display buffer to the vga
+        char* buf = get_buf();
+        display_vga(buf);
     }
 
     // Wait for children to exit.  (See wakeup1 call in proc_exit.)

@@ -6,9 +6,10 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
-#include "int32.h"
 
-#include "tetris.h"
+#include "syssleep.h"
+#include "display.h"
+#include "systetris.h"
 
 int
 sys_fork(void)
@@ -93,31 +94,34 @@ sys_uptime(void)
   return xticks;
 }
 
-int
-sys_mode(void)
+int 
+sys_tetris(void)
 {
-    int* nptr;
-    pte_t* pptr;
-    struct regs16* rptr;
+    int alive = 1;
 
-    if(argptr(0, (char**)&nptr, sizeof(int)) < 0)
-        return -1;
+    new_tet(ticks);
 
-    if(argptr(0, (char**)&pptr, sizeof(pte_t)) < 0)
-        return -1;
+    start_tetris = 1;
+    while (alive)
+    {
+        // move the curr tet down one row
+        move_tet(TET_MOVE_DOWN);
 
-    if(argptr(0, (char**)&rptr, sizeof(struct regs16)) < 0)
-        return -1;
+        // update the display buffer
+        update_screen();
 
-    pushcli();
-    *pptr = biosmap();
-    int32(*nptr, rptr);  
-    biosunmap(*pptr);
-    popcli();
+        // write the display buffer to the vga
+        char* buf = get_buf();
+        display_vga(buf);
 
+        // sleep
+        syssleep(50);
+    }
+    display_text();
     return 0;
 }
 
+/*
 int
 sys_clearscreen(void)
 {
@@ -132,6 +136,7 @@ sys_updatescreen(void)
     if(argint(0, &tptr) < 0)
         return -1;
 
+    ((tet_t*)tptr)->r = tet_r;
     draw_tet((tet_t*)tptr);
     return 0;
 }
@@ -139,16 +144,5 @@ sys_updatescreen(void)
 int
 sys_drawscreen(void)
 {
-    struct regs16 regs = { .ax = 0x13};
-    pushcli();
-    pte_t original = biosmap();
-    int32(0x10, &regs);  
-    biosunmap(original);
-    popcli();
-
-    char* buf = get_buf();
-
-    memmove((char *)P2V(0xA0000), buf, (320*200));
-
-    return (int)buf;
 }
+*/

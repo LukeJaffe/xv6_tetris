@@ -28,7 +28,9 @@ OBJS = \
 	vectors.o\
 	vm.o\
 	bios_int.o\
-	tetris.o\
+	display.o\
+	systetris.o\
+	syssleep.o\
 
 # Cross-compiling (e.g., on Mac OS X)
 # TOOLPREFIX = i386-jos-elf
@@ -177,7 +179,7 @@ UPROGS=\
 	_usertests\
 	_wc\
 	_zombie\
-	_draw\
+	_tetris\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
@@ -216,7 +218,7 @@ QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \
 ifndef CPUS
 CPUS := 1
 endif
-QEMUOPTS = -hdb fs.img xv6.img -smp $(CPUS) -m 512 $(QEMUEXTRA) -snapshot -enable-kvm
+QEMUOPTS = -hdb fs.img xv6.img -smp $(CPUS) -m 512 $(QEMUEXTRA) -snapshot #-enable-kvm
 
 qemu: fs.img xv6.img
 	$(QEMU) -serial mon:stdio $(QEMUOPTS)
