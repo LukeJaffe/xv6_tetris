@@ -99,13 +99,16 @@ sys_tetris(void)
 {
     int alive = 1;
 
+    init_blocks();
+
     new_tet(ticks);
 
     start_tetris = 1;
     while (alive)
     {
         // move the curr tet down one row
-        move_tet(TET_MOVE_DOWN);
+        if (move_tet(TET_MOVE_DOWN))
+            new_tet(ticks);
 
         // update the display buffer
         update_screen();

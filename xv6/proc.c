@@ -263,17 +263,20 @@ wait(void)
         // down key
         else if (keycode == 227)
         {
-            move_tet(TET_MOVE_DOWN);
+            if (move_tet(TET_MOVE_DOWN))
+                new_tet(ticks);
         }
         // left key
         else if (keycode == 228)
         {
-            move_tet(TET_MOVE_LEFT);
+            if (move_tet(TET_MOVE_LEFT))
+                new_tet(ticks);
         }
         // right key
         else if (keycode == 229)
         {
-            move_tet(TET_MOVE_RIGHT);
+            if (move_tet(TET_MOVE_RIGHT))
+                new_tet(ticks);
         }
         else
         {

@@ -8,8 +8,20 @@
 #define BLOCK_WIDTH     (9)                 // in pixels
 #define BLOCK_HEIGHT    (9)                 // in pixels
 
+// well bounds
 #define WELL_TOP        (0)
+#define WELL_BOT        (WELL_HEIGHT*BLOCK_HEIGHT)
 #define WELL_LEFT       (SCREEN_WIDTH/2-(WELL_WIDTH*BLOCK_WIDTH)/2)
+#define WELL_RIGHT      (SCREEN_WIDTH/2+(WELL_WIDTH*BLOCK_WIDTH)/2)
+
+// board bounds
+#define BOARD_TOP       (BLOCK_HEIGHT)
+#define BOARD_BOT       (BOARD_HEIGHT*BLOCK_HEIGHT)
+#define BOARD_LEFT      (SCREEN_WIDTH/2-(BOARD_WIDTH*BLOCK_WIDTH)/2)
+#define BOARD_RIGHT     (SCREEN_WIDTH/2+(BOARD_WIDTH*BLOCK_WIDTH)/2)
+
+// block stuff
+#define NUM_BLOCKS      (BOARD_WIDTH*BOARD_HEIGHT)
 
 typedef enum
 {
@@ -43,6 +55,14 @@ typedef enum
     TET_MOVE_DROP
 } tet_move_t;
 
+typedef struct tet_bounds
+{
+    int l;
+    int r;
+    int t;
+    int b;
+} tet_bounds_t;
+
 typedef struct block
 {
     int x;
@@ -50,15 +70,6 @@ typedef struct block
     int c;
     int p;
 } block_t;
-
-typedef struct tet
-{
-    int x;
-    int y;
-    int r;
-    int t;
-    int l;
-} tet_t;
 
 typedef struct well
 {
@@ -68,6 +79,8 @@ typedef struct well
     int h;
 } well_t;
 
+typedef tet_bounds_t well_bounds_t;
+
 // extern variables
 extern int start_tetris;
 
@@ -76,7 +89,7 @@ char* get_buf();
 void update_screen();
 void new_tet(int seed);
 void rotate_tet();
-void move_tet(tet_move_t tet_move);
-void draw_block(int x, int y, int c);
-void draw_tet(struct tet* tet);
-void tetris();
+int move_tet(tet_move_t tet_move);
+void bounds_tet();
+void draw_tet();
+void init_blocks();
