@@ -99,6 +99,8 @@ sys_tetris(void)
 {
     int alive = 1;
 
+    vga_mode();
+
     init_blocks();
 
     new_tet(ticks);
@@ -114,12 +116,12 @@ sys_tetris(void)
         update_screen();
 
         // write the display buffer to the vga
-        char* buf = get_buf();
-        display_vga(buf);
+        draw_unchained();
 
         // sleep
-        syssleep(50);
+        syssleep(20);
     }
+
     display_text();
     return 0;
 }

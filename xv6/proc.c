@@ -278,17 +278,18 @@ wait(void)
             if (move_tet(TET_MOVE_RIGHT))
                 new_tet(ticks);
         }
-        else
+        else if (keycode == 32)
         {
-
+            if (move_tet(TET_MOVE_DROP))
+                new_tet(ticks);
         }
+        else {}
 
         // update the display buffer
         update_screen();
 
         // write the display buffer to the vga
-        char* buf = get_buf();
-        display_vga(buf);
+        draw_unchained();
     }
 
     // Wait for children to exit.  (See wakeup1 call in proc_exit.)

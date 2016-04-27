@@ -195,6 +195,9 @@ consoleintr(int (*getc)(void))
   while((c = getc()) >= 0){
     keycode = c;
     switch(c){
+    case 32:
+        wakeup(initproc);
+        break;
     case 226:
         wakeup(initproc);
         break;

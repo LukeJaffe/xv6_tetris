@@ -1,6 +1,3 @@
-#define SCREEN_WIDTH    (320)
-#define SCREEN_HEIGHT   (200)
-
 #define BOARD_WIDTH     (10)                // in blocks
 #define BOARD_HEIGHT    (20)                // in blocks
 #define WELL_WIDTH      (BOARD_WIDTH+2)     // in blocks
@@ -22,6 +19,8 @@
 
 // block stuff
 #define NUM_BLOCKS      (BOARD_WIDTH*BOARD_HEIGHT)
+#define NUM_ROWS        (BOARD_HEIGHT)
+#define NUM_COLS        (BOARD_WIDTH)
 
 typedef enum
 {
@@ -85,7 +84,6 @@ typedef tet_bounds_t well_bounds_t;
 extern int start_tetris;
 
 // prototypes
-char* get_buf();
 void update_screen();
 void new_tet(int seed);
 void rotate_tet();

@@ -31,6 +31,8 @@ OBJS = \
 	display.o\
 	systetris.o\
 	syssleep.o\
+	add.o\
+	draw.o\
 
 # Cross-compiling (e.g., on Mac OS X)
 # TOOLPREFIX = i386-jos-elf

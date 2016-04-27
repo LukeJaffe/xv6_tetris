@@ -1,5 +1,7 @@
 //#include "defs.h" // for ticks (random seed)
+#include "print.h"
 #include "systetris.h"
+#include "display.h"
 
 struct tet
 {
@@ -12,11 +14,7 @@ struct tet
 } curr_tet;
 
 int start_tetris = 0;
-
-// screen buffers
-static char oldbuf[SCREEN_WIDTH*SCREEN_HEIGHT];
-static char buf[SCREEN_WIDTH*SCREEN_HEIGHT];
-static char diffbuf[SCREEN_WIDTH*SCREEN_HEIGHT];
+int score = 0;
 
 // tetris module variables
 static well_t well = 
@@ -121,6 +119,12 @@ void check_tet()
 
 void kick_tet()
 {
+    //int dx;
+
+    //int i;
+    //for (i = 0; i < 4; i++)
+     
+    /*
     int dx;
     dx = well_bounds.l - curr_tet.b.l;
     if (dx > 0)
@@ -128,6 +132,7 @@ void kick_tet()
     dx = well_bounds.r - curr_tet.b.r;
     if (dx < 0)
        curr_tet.x += dx;
+    */
 }
 
 void rotate_tet()
@@ -163,20 +168,44 @@ int right_bound()
 
 void move_left()
 {
-    int i;
-    curr_tet.x -= BLOCK_WIDTH;
+    int i, j;
+
+    // check if any blocks to the left of this one
+    for (i = 0; i < NUM_BLOCKS; i++)
+        if (blocks[i].p)
+            for (j = 0; j < 4; j++)
+                if (curr_tet.blocks[j].y == blocks[i].y)
+                    if (curr_tet.blocks[j].x-BLOCK_WIDTH == blocks[i].x)
+                        return;
+
+    // check if touching left well wall
     if (left_bound() > well_bounds.l)
+    {
+        curr_tet.x -= BLOCK_WIDTH;
         for (i = 0; i < 4; i++)
             curr_tet.blocks[i].x -= BLOCK_WIDTH;
+    }
 }
 
 void move_right()
 {
-    int i;
-    curr_tet.x += BLOCK_WIDTH;
+    int i, j;
+
+    // check if any blocks to the right of this one
+    for (i = 0; i < NUM_BLOCKS; i++)
+        if (blocks[i].p)
+            for (j = 0; j < 4; j++)
+                if (curr_tet.blocks[j].y == blocks[i].y)
+                    if (curr_tet.blocks[j].x+BLOCK_WIDTH == blocks[i].x)
+                        return;
+
+    // check if touching right well wall
     if (right_bound()+BLOCK_WIDTH < well_bounds.r)
+    {
+        curr_tet.x += BLOCK_WIDTH;
         for (i = 0; i < 4; i++)
             curr_tet.blocks[i].x += BLOCK_WIDTH;
+    }
 }
 
 int move_down()
@@ -219,6 +248,74 @@ void lock_tet()
     }
 }
 
+void clear_rows()
+{
+    int i, idx;
+    int rows[NUM_ROWS];
+
+    // init rows to all 0
+    for (i = 0; i < NUM_ROWS; i++)
+        rows[i] = 0;
+
+    // how many blocks are in each row
+    for (i = 0; i < NUM_BLOCKS; i++)
+    {
+        if (blocks[i].p)
+        {
+            idx = blocks[i].y/BLOCK_HEIGHT - 1;
+            rows[idx]++;
+        }
+    }
+
+    // mark all full rows
+    for (i = 0; i < NUM_ROWS; i++)
+    {
+        //cprintf("row %d: %d\n", i, rows[i]);
+        if (rows[i] == NUM_COLS)
+            rows[i] = 1;
+        else
+           rows[i] = 0; 
+    }
+
+    // clear all full rows
+    for (i = 0; i < NUM_BLOCKS; i++)
+    {
+        if (blocks[i].p)
+        {
+            idx = blocks[i].y/BLOCK_HEIGHT - 1;
+            if (rows[idx])
+                blocks[i].p = 0;
+        }
+    }
+
+    // get idx of a cleared row
+    int cr = 0;
+    for (i = 0; i < NUM_ROWS; i++)
+    {
+        if (rows[i])
+        {
+            idx = i;
+            cr++;
+        }
+    }
+
+    // drop all blocks above cleared rows
+    int j;
+    if (cr > 0)
+    {
+        for (i = 0; i < NUM_BLOCKS; i++)
+        {
+            if (blocks[i].p)
+            {
+                j = blocks[i].y/BLOCK_HEIGHT - 1;
+                if (j < idx)
+                    blocks[i].y += cr*BLOCK_HEIGHT;
+            }
+        }
+        score += 100*cr;
+    }
+}
+
 int move_tet(tet_move_t tet_move)
 {
     switch (tet_move)
@@ -237,61 +334,64 @@ int move_tet(tet_move_t tet_move)
             else
             {
                 lock_tet();
+                clear_rows();
                 return 1;
             }
         case TET_MOVE_DROP:
+            while (move_down());
             return 0;
         default:
             return -1;
     }
 }
 
-// only update pixels which have actually changed between ticks
-// TODO: check if this does anything...
-void diff_buf()
-{
-    int i;
-    for (i = 0; i < SCREEN_WIDTH*SCREEN_HEIGHT; i++)
-    {
-        if (buf[i] != oldbuf[i])
-            diffbuf[i] = buf[i];
-        else
-            diffbuf[i] = oldbuf[i];
-    }
-}
-
-char* get_buf()
-{
-    diff_buf();
-    return (char*)diffbuf;
-}
-
 void update_screen()
 {
     int i, j;
 
-    // save the old screen buffer
-    for (i = 0; i < SCREEN_WIDTH*SCREEN_HEIGHT; i++)
-        oldbuf[i] = buf[i]; 
-
+#if MODE_UNCHAINED
+    int p;
     // clear screen to black
-    for (i = 0; i < SCREEN_WIDTH*SCREEN_HEIGHT; i++)
-        buf[i] = 0; 
+    for (p = 0; p < NUM_FRAMES; p++)
+        for (i = 0; i < FRAME_PIX; i++)
+            frame_buffer[p][i] = 0; 
+
+    // draw well
+    for (p = 0; p < NUM_FRAMES; p++) 
+        for (i = well.x; i < well.x+well.w; i++)
+            for (j = well.y; j < well.y+BLOCK_HEIGHT; j++)
+                frame_buffer[p][((i>>2)+((j*SCREEN_WIDTH)>>2))] = 21;
+    for (p = 0; p < NUM_FRAMES; p++) 
+        for (i = well.x; i < well.x+well.w; i++)
+            for (j = well.y+well.h-BLOCK_HEIGHT+1; j < well.y+well.h; j++)
+                frame_buffer[p][((i>>2)+((j*SCREEN_WIDTH)>>2))] = 21;
+    for (p = 0; p < NUM_FRAMES; p++) 
+        for (i = well.x; i < well.x+BLOCK_WIDTH; i++)
+            for (j = well.y; j < well.y+well.h; j++)
+                frame_buffer[p][((i>>2)+((j*SCREEN_WIDTH)>>2))] = 21;
+    for (p = 0; p < NUM_FRAMES; p++) 
+        for (i = well.x+well.w-BLOCK_WIDTH+1; i < well.x+well.w; i++)
+            for (j = well.y; j < well.y+well.h; j++)
+                frame_buffer[p][((i>>2)+((j*SCREEN_WIDTH)>>2))] = 21;
+#else
+    // clear screen to black
+    for (i = 0; i < SCREEN_PIX; i++)
+        frame_buffer[i] = 0; 
 
     // draw well
     for (i = well.x; i < well.x+well.w; i++)
         for (j = well.y; j < well.y+BLOCK_HEIGHT; j++)
-            buf[SCREEN_WIDTH*j+i] = 21;
+            frame_buffer[SCREEN_WIDTH*j + i] = 21;
     for (i = well.x; i < well.x+well.w; i++)
         for (j = well.y+well.h-BLOCK_HEIGHT+1; j < well.y+well.h; j++)
-            buf[SCREEN_WIDTH*j+i] = 21;
+            frame_buffer[SCREEN_WIDTH*j + i] = 21;
     for (i = well.x; i < well.x+BLOCK_WIDTH; i++)
         for (j = well.y; j < well.y+well.h; j++)
-            buf[SCREEN_WIDTH*j+i] = 21;
+            frame_buffer[SCREEN_WIDTH*j + i] = 21;
     for (i = well.x+well.w-BLOCK_WIDTH+1; i < well.x+well.w; i++)
         for (j = well.y; j < well.y+well.h; j++)
-            buf[SCREEN_WIDTH*j+i] = 21;
-
+            frame_buffer[SCREEN_WIDTH*j + i] = 21;
+#endif
     // draw the current tet
     draw_tet();
 
@@ -304,7 +404,7 @@ void draw_block(int x, int y, int c)
     int i, j;
     for (i = x+1; i < x+BLOCK_WIDTH; i++)
         for (j = y+1; j < y+BLOCK_HEIGHT; j++)
-            buf[SCREEN_WIDTH*j+i] = c;
+            frame_buffer[SCREEN_WIDTH*j+i] = c;
 }
 
 // function defs
