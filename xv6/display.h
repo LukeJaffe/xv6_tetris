@@ -34,9 +34,8 @@
 #define MODE_CONTROL  0x17
 
 int display_text();
-int vga_mode();
-int set_unchained();
-int draw_unchained();
+int display_vga();
+int display_draw();
 
 // screen frame_buffer
 #if MODE_UNCHAINED

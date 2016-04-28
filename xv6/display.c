@@ -11,13 +11,9 @@
 #include "display.h"
 #include "systetris.h"
 
-#include "add.h"
-#include "draw.h"
-#include "print.h"
-
 #define VERTICAL_RETRACE
 
-int set_unchained()
+int display_unchained()
 {
     /* turn off chain-4 mode */
     outb(SC_INDEX, MEMORY_MODE);
@@ -38,7 +34,7 @@ int set_unchained()
     return 0;
 }   
 
-int vga_mode()
+int display_vga()
 {
     // set processor to vga mode
     struct regs16 regs = { .ax = 0x13};
@@ -46,7 +42,7 @@ int vga_mode()
     pte_t original = biosmap();
     int32(0x10, &regs);  
 #if MODE_UNCHAINED
-    set_unchained();
+    display_unchained();
 #endif
     biosunmap(original);
     popcli();
@@ -54,7 +50,7 @@ int vga_mode()
     return 0;
 }
 
-int draw_unchained()
+int display_draw()
 {
     static int page = 0;
 

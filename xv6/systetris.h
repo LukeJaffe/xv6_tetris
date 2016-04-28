@@ -84,11 +84,9 @@ typedef tet_bounds_t well_bounds_t;
 extern int start_tetris;
 
 // prototypes
-void update_screen();
-void new_tet(int seed);
-void rotate_tet();
-int move_tet(tet_move_t tet_move);
-void bounds_tet();
-void draw_tet();
-void init_blocks();
-int get_score();
+void tetris_update();
+void tetris_new(int seed);
+void tetris_rotate();
+int tetris_move(tet_move_t tet_move);
+void tetris_init();
+int tetris_score();

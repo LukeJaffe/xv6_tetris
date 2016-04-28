@@ -258,38 +258,38 @@ wait(void)
         // up key
         if (keycode == 226)
         {
-            rotate_tet();
+            tetris_rotate();
         }
         // down key
         else if (keycode == 227)
         {
-            if (move_tet(TET_MOVE_DOWN))
-                new_tet(ticks);
+            if (tetris_move(TET_MOVE_DOWN))
+                tetris_new(ticks);
         }
         // left key
         else if (keycode == 228)
         {
-            if (move_tet(TET_MOVE_LEFT))
-                new_tet(ticks);
+            if (tetris_move(TET_MOVE_LEFT))
+                tetris_new(ticks);
         }
         // right key
         else if (keycode == 229)
         {
-            if (move_tet(TET_MOVE_RIGHT))
-                new_tet(ticks);
+            if (tetris_move(TET_MOVE_RIGHT))
+                tetris_new(ticks);
         }
         else if (keycode == 32)
         {
-            if (move_tet(TET_MOVE_DROP))
-                new_tet(ticks);
+            if (tetris_move(TET_MOVE_DROP))
+                tetris_new(ticks);
         }
         else {}
 
         // update the display buffer
-        update_screen();
+        tetris_update();
 
         // write the display buffer to the vga
-        draw_unchained();
+        display_draw();
     }
 
     // Wait for children to exit.  (See wakeup1 call in proc_exit.)

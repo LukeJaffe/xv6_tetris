@@ -28,10 +28,8 @@ OBJS = \
 	vectors.o\
 	vm.o\
 	display.o\
-	systetris.o\
 	syssleep.o\
-	add.o\
-	draw.o\
+	systetris.o\
 
 # Cross-compiling (e.g., on Mac OS X)
 # TOOLPREFIX = i386-jos-elf

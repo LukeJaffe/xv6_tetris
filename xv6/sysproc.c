@@ -98,13 +98,13 @@ int
 sys_tetris(void)
 {
     // set VGA display mode
-    vga_mode();
+    display_vga();
 
     // set up the array of locked blocks
-    init_blocks();
+    tetris_init();
 
     // create the first tet at top of screen
-    new_tet(ticks);
+    tetris_new(ticks);
 
     // tell interrupt handler that game has started
     start_tetris = 1;
@@ -114,16 +114,16 @@ sys_tetris(void)
     while (alive)
     {
         // move the curr tet down one row
-        int code = move_tet(TET_MOVE_DOWN);
+        int code = tetris_move(TET_MOVE_DOWN);
 
         // nothing blocking the curr tet
         if (code == 0)
         {
             // update the display buffer
-            update_screen();
+            tetris_update();
 
             // write the display buffer to the vga
-            draw_unchained();
+            display_draw();
 
             // wait 1 tick
             syssleep(50);
@@ -131,7 +131,7 @@ sys_tetris(void)
         // tet locked on non-top row spawns new tet
         else if (code == 1)
         {
-            new_tet(ticks);
+            tetris_new(ticks);
         }
         // tet locked on top row is losing condition
         else if (code == -1)
@@ -144,5 +144,5 @@ sys_tetris(void)
     display_text();
 
     // return score to user
-    return get_score();
+    return tetris_score();
 }
