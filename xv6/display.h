@@ -33,7 +33,6 @@
 #define UNDERLINE_LOC 0x14
 #define MODE_CONTROL  0x17
 
-int display_vga(char* buf);
 int display_text();
 int vga_mode();
 int set_unchained();

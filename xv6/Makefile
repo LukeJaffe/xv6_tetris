@@ -27,7 +27,6 @@ OBJS = \
 	uart.o\
 	vectors.o\
 	vm.o\
-	bios_int.o\
 	display.o\
 	systetris.o\
 	syssleep.o\

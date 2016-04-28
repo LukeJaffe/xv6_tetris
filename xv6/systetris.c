@@ -1,4 +1,3 @@
-//#include "defs.h" // for ticks (random seed)
 #include "print.h"
 #include "systetris.h"
 #include "display.h"
@@ -9,7 +8,6 @@ struct tet
     int y;
     int r;
     int t;
-    tet_bounds_t b;
     block_t blocks[4];
 } curr_tet;
 
@@ -46,15 +44,10 @@ static void set_tet_z();
 static void set_tet_j();
 static void set_tet_l();
 
-/*
-static void bounds_tet_i();
-static void bounds_tet_o();
-static void bounds_tet_t();
-static void bounds_tet_s();
-static void bounds_tet_z();
-static void bounds_tet_j();
-static void bounds_tet_l();
-*/
+int get_score()
+{
+    return score;
+}
 
 void init_blocks()
 {
@@ -103,27 +96,68 @@ void set_tet()
 
 void new_tet(int seed)
 {
-    //curr_tet.t = seed%NUM_TET_TYPES;
-    curr_tet.t = TET_TYPE_I;
-    curr_tet.x = BOARD_LEFT;
+    curr_tet.t = seed%NUM_TET_TYPES;
+    //curr_tet.t = TET_TYPE_L;
+    curr_tet.x = BOARD_LEFT+3*BLOCK_WIDTH;
     curr_tet.y = BOARD_TOP;
     curr_tet.r = 0;         //rotation
 
     set_tet();
 }
 
-void check_tet()
+int check_kick()
 {
-         
+    
+    int i, j, dl, dr, db;
+
+    // check if any two blocks overlap
+    for (i = 0; i < NUM_BLOCKS; i++)
+        for (j = 0; j < 4; j++)
+            if (blocks[i].p && blocks[i].x == curr_tet.blocks[j].x && blocks[i].y == curr_tet.blocks[j].y)
+                return 1;
+
+    // check against left well wall
+    for (i = 0; i < 4; i++)
+    {
+        dl = well_bounds.l - curr_tet.blocks[i].x;
+        if (dl > 0)
+            return 1;
+    }
+
+    // check against right well wall
+    for (i = 0; i < 4; i++)
+    {
+        dr = curr_tet.blocks[i].x - well_bounds.r + 1;
+        if (dr > 0)
+            return 1;
+    }
+
+    // check against well bottom
+    for (i = 0; i < 4; i++)
+    {
+        db = curr_tet.blocks[i].y - well_bounds.b;
+        if (db > 0)
+            return 1;
+    }
+
+    return 0;
 }
 
 void kick_tet()
 {
-    //int dx;
+    int dx, mdx = 0;
 
-    //int i;
-    //for (i = 0; i < 4; i++)
-     
+    int i;
+    for (i = 0; i < 4; i++)
+    {
+        dx = well_bounds.l - curr_tet.blocks[i].x;
+        if (dx > mdx)
+            mdx = dx;
+    }
+    
+    curr_tet.x += mdx;
+    for (i = 0; i < 4; i++);
+        curr_tet.blocks[i].x += mdx;
     /*
     int dx;
     dx = well_bounds.l - curr_tet.b.l;
@@ -137,8 +171,14 @@ void kick_tet()
 
 void rotate_tet()
 {
+    int r = curr_tet.r;
     curr_tet.r = (curr_tet.r+1)%4;
     set_tet();
+    if (check_kick())
+    {
+        curr_tet.r = r;
+        set_tet();
+    }
 
     // check for collision (do kick if needed)
     //kick_tet();
@@ -232,7 +272,7 @@ int move_down()
     return 1;
 }
 
-void lock_tet()
+int lock_tet()
 {
     int i, j;
     for (i = 0, j = 0; i < 4 && j < NUM_BLOCKS; j++)
@@ -246,6 +286,11 @@ void lock_tet()
             i++;
         }
     }
+
+    for (i = 0; i < 4; i++)
+        if (curr_tet.blocks[i].y == BOARD_TOP)
+            return 1;
+    return 0; 
 }
 
 void clear_rows()
@@ -313,6 +358,7 @@ void clear_rows()
             }
         }
         score += 100*cr;
+        cprintf("Score: %d\n", score);
     }
 }
 
@@ -333,15 +379,21 @@ int move_tet(tet_move_t tet_move)
             }
             else
             {
-                lock_tet();
-                clear_rows();
-                return 1;
+                if (lock_tet())
+                {
+                    return -1;
+                }
+                else
+                {
+                    clear_rows();
+                    return 1;
+                }
             }
         case TET_MOVE_DROP:
             while (move_down());
             return 0;
         default:
-            return -1;
+            return -2;
     }
 }
 
@@ -407,131 +459,11 @@ void draw_block(int x, int y, int c)
             frame_buffer[SCREEN_WIDTH*j+i] = c;
 }
 
-// function defs
-void bounds_tet()
-{
-    /*
-    switch (curr_tet.t)
-    {
-        case TET_TYPE_I:
-            bounds_tet_i();
-            break;
-        case TET_TYPE_O:
-            bounds_tet_o();
-            break;
-        case TET_TYPE_T:
-            bounds_tet_t();
-            break;
-        case TET_TYPE_S:
-            bounds_tet_s();
-            break;
-        case TET_TYPE_Z:
-            bounds_tet_z();
-            break;
-        case TET_TYPE_J:
-            bounds_tet_j();
-            break;
-        case TET_TYPE_L:
-            bounds_tet_l();
-            break;
-       default:
-            break;
-    }
-    */
-}
-
-/*
-void bounds_tet_i()
-{
-    switch (curr_tet.r)
-    {
-        case 0:
-            curr_tet.b.l = curr_tet.x;
-            curr_tet.b.r = curr_tet.x+4*BLOCK_WIDTH;
-            curr_tet.b.t = curr_tet.y+1*BLOCK_HEIGHT;
-            curr_tet.b.b = curr_tet.y+1*BLOCK_HEIGHT;
-            break;
-        case 1:
-            curr_tet.b.l = curr_tet.x+2*BLOCK_WIDTH;
-            curr_tet.b.r = curr_tet.x+3*BLOCK_WIDTH;
-            curr_tet.b.t = curr_tet.y;
-            curr_tet.b.b = curr_tet.y+3*BLOCK_HEIGHT;
-            break;
-        case 2:
-            curr_tet.b.l = curr_tet.x;
-            curr_tet.b.r = curr_tet.x+4*BLOCK_WIDTH;
-            curr_tet.b.t = curr_tet.y+2*BLOCK_HEIGHT;
-            curr_tet.b.b = curr_tet.y+2*BLOCK_HEIGHT;
-            break;
-        case 3:
-            curr_tet.b.l = curr_tet.x+1*BLOCK_WIDTH;
-            curr_tet.b.r = curr_tet.x+2*BLOCK_WIDTH;
-            curr_tet.b.t = curr_tet.y;
-            curr_tet.b.b = curr_tet.y+3*BLOCK_HEIGHT;
-            break;
-        default:
-            break;
-    }
-}
-
-void bounds_tet_o()
-{
-}
-
-void bounds_tet_t()
-{
-}
-
-void bounds_tet_s()
-{
-}
-
-void bounds_tet_z()
-{
-}
-
-void bounds_tet_j()
-{
-}
-
-void bounds_tet_l()
-{
-}
-*/
-
 void draw_tet()
 {
     int i;
     for (i = 0; i < 4; i++)
         draw_block(curr_tet.blocks[i].x, curr_tet.blocks[i].y, curr_tet.blocks[i].c);
-    /*
-    switch (tet->t)
-    {
-        case TET_TYPE_I:
-            set_tet_i(tet);
-            break;
-        case TET_TYPE_O:
-            set_tet_o(tet);
-            break;
-        case TET_TYPE_T:
-            set_tet_t(tet);
-            break;
-        case TET_TYPE_S:
-            set_tet_s(tet);
-            break;
-        case TET_TYPE_Z:
-            set_tet_z(tet);
-            break;
-        case TET_TYPE_J:
-            set_tet_j(tet);
-            break;
-        case TET_TYPE_L:
-            set_tet_l(tet);
-            break;
-       default:
-            break;
-    }
-    */
 }
 
 void set_tet_i()
@@ -542,7 +474,6 @@ void set_tet_i()
         case 0:
             for (i = 0; i < 4; i++)
             {
-                //draw_block(tet->x + i*BLOCK_WIDTH, tet->y + BLOCK_WIDTH, TET_COLOR_I);
                 curr_tet.blocks[i].x = curr_tet.x + i*BLOCK_WIDTH;
                 curr_tet.blocks[i].y = curr_tet.y + BLOCK_WIDTH;
                 curr_tet.blocks[i].c = TET_COLOR_I;
@@ -551,7 +482,6 @@ void set_tet_i()
         case 1:
             for (i = 0; i < 4; i++)
             {
-                //draw_block(curr_tet.x + 2*BLOCK_WIDTH, curr_tet.y + i*BLOCK_WIDTH, TET_COLOR_I);
                 curr_tet.blocks[i].x = curr_tet.x + 2*BLOCK_WIDTH;
                 curr_tet.blocks[i].y = curr_tet.y + i*BLOCK_WIDTH;
                 curr_tet.blocks[i].c = TET_COLOR_I;
@@ -560,7 +490,6 @@ void set_tet_i()
         case 2:
             for (i = 0; i < 4; i++)
             {
-                //draw_block(curr_tet.x + i*BLOCK_WIDTH, curr_tet.y + 2*BLOCK_WIDTH, TET_COLOR_I);
                 curr_tet.blocks[i].x = curr_tet.x + i*BLOCK_WIDTH;
                 curr_tet.blocks[i].y = curr_tet.y + 2*BLOCK_WIDTH;
                 curr_tet.blocks[i].c = TET_COLOR_I;
@@ -569,7 +498,6 @@ void set_tet_i()
         case 3:
             for (i = 0; i < 4; i++)
             {
-                //draw_block(curr_tet.x + BLOCK_WIDTH, curr_tet.y + i*BLOCK_WIDTH, TET_COLOR_I);
                 curr_tet.blocks[i].x = curr_tet.x + BLOCK_WIDTH;
                 curr_tet.blocks[i].y = curr_tet.y + i*BLOCK_WIDTH;
                 curr_tet.blocks[i].c = TET_COLOR_I;
@@ -582,39 +510,62 @@ void set_tet_i()
 
 void set_tet_o()
 {
-    draw_block(curr_tet.x, curr_tet.y, TET_COLOR_O);
-    draw_block(curr_tet.x + BLOCK_WIDTH, curr_tet.y, TET_COLOR_O);
-    draw_block(curr_tet.x, curr_tet.y + BLOCK_WIDTH, TET_COLOR_O);
-    draw_block(curr_tet.x + BLOCK_WIDTH, curr_tet.y + BLOCK_WIDTH, TET_COLOR_O);
+    int i, j;
+    for (i = 1; i < 3; i++)
+        for (j = 0; j < 2; j++)
+        {
+            curr_tet.blocks[(i-1)*2 + j].x = curr_tet.x + i*BLOCK_WIDTH;
+            curr_tet.blocks[(i-1)*2 + j].y = curr_tet.y + j*BLOCK_HEIGHT;
+            curr_tet.blocks[(i-1)*2 + j].c = TET_COLOR_O;
+        }
 }
 
 void set_tet_t()
 {
+    int i;
+    for (i = 0; i < 4; i++)
+        curr_tet.blocks[i].c = TET_COLOR_T;
     switch (curr_tet.r)
     {
         case 0:
-            draw_block(curr_tet.x, curr_tet.y, TET_COLOR_T);
-            draw_block(curr_tet.x - BLOCK_WIDTH, curr_tet.y, TET_COLOR_T);
-            draw_block(curr_tet.x + BLOCK_WIDTH, curr_tet.y, TET_COLOR_T);
-            draw_block(curr_tet.x, curr_tet.y - BLOCK_WIDTH, TET_COLOR_T);
+            curr_tet.blocks[0].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[0].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[1].x = curr_tet.x;
+            curr_tet.blocks[1].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[2].x = curr_tet.x + 2*BLOCK_WIDTH;
+            curr_tet.blocks[2].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[3].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[3].y = curr_tet.y;
             break;
         case 1:
-            draw_block(curr_tet.x, curr_tet.y, TET_COLOR_T);
-            draw_block(curr_tet.x + BLOCK_WIDTH, curr_tet.y, TET_COLOR_T);
-            draw_block(curr_tet.x, curr_tet.y - BLOCK_WIDTH, TET_COLOR_T);
-            draw_block(curr_tet.x, curr_tet.y + BLOCK_WIDTH, TET_COLOR_T);
+            curr_tet.blocks[0].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[0].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[1].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[1].y = curr_tet.y + 2*BLOCK_HEIGHT;
+            curr_tet.blocks[2].x = curr_tet.x + 2*BLOCK_WIDTH;
+            curr_tet.blocks[2].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[3].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[3].y = curr_tet.y;
             break;
         case 2:
-            draw_block(curr_tet.x, curr_tet.y, TET_COLOR_T);
-            draw_block(curr_tet.x - BLOCK_WIDTH, curr_tet.y, TET_COLOR_T);
-            draw_block(curr_tet.x + BLOCK_WIDTH, curr_tet.y, TET_COLOR_T);
-            draw_block(curr_tet.x, curr_tet.y + BLOCK_WIDTH, TET_COLOR_T);
+            curr_tet.blocks[0].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[0].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[1].x = curr_tet.x;
+            curr_tet.blocks[1].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[2].x = curr_tet.x + 2*BLOCK_WIDTH;
+            curr_tet.blocks[2].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[3].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[3].y = curr_tet.y + 2*BLOCK_HEIGHT;
             break;
         case 3:
-            draw_block(curr_tet.x, curr_tet.y, TET_COLOR_T);
-            draw_block(curr_tet.x - BLOCK_WIDTH, curr_tet.y, TET_COLOR_T);
-            draw_block(curr_tet.x, curr_tet.y - BLOCK_WIDTH, TET_COLOR_T);
-            draw_block(curr_tet.x, curr_tet.y + BLOCK_WIDTH, TET_COLOR_T);
+            curr_tet.blocks[0].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[0].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[1].x = curr_tet.x;
+            curr_tet.blocks[1].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[2].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[2].y = curr_tet.y + 2*BLOCK_HEIGHT;
+            curr_tet.blocks[3].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[3].y = curr_tet.y;
             break;
         default:
             break;
@@ -623,31 +574,50 @@ void set_tet_t()
 
 void set_tet_s()
 {
+    int i;
+    for (i = 0; i < 4; i++)
+        curr_tet.blocks[i].c = TET_COLOR_S;
     switch (curr_tet.r)
     {
         case 0:
-            draw_block(curr_tet.x, curr_tet.y, TET_COLOR_S);
-            draw_block(curr_tet.x - BLOCK_WIDTH, curr_tet.y, TET_COLOR_S);
-            draw_block(curr_tet.x, curr_tet.y - BLOCK_WIDTH, TET_COLOR_S);
-            draw_block(curr_tet.x + BLOCK_WIDTH, curr_tet.y - BLOCK_WIDTH, TET_COLOR_S);
+            curr_tet.blocks[0].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[0].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[1].x = curr_tet.x;
+            curr_tet.blocks[1].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[2].x = curr_tet.x + 2*BLOCK_WIDTH;
+            curr_tet.blocks[2].y = curr_tet.y;
+            curr_tet.blocks[3].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[3].y = curr_tet.y;
             break;
         case 1:
-            draw_block(curr_tet.x, curr_tet.y, TET_COLOR_S);
-            draw_block(curr_tet.x + BLOCK_WIDTH, curr_tet.y, TET_COLOR_S);
-            draw_block(curr_tet.x, curr_tet.y - BLOCK_WIDTH, TET_COLOR_S);
-            draw_block(curr_tet.x + BLOCK_WIDTH, curr_tet.y + BLOCK_WIDTH, TET_COLOR_S);
+            curr_tet.blocks[0].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[0].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[1].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[1].y = curr_tet.y;
+            curr_tet.blocks[2].x = curr_tet.x + 2*BLOCK_WIDTH;
+            curr_tet.blocks[2].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[3].x = curr_tet.x + 2*BLOCK_WIDTH;
+            curr_tet.blocks[3].y = curr_tet.y + 2*BLOCK_HEIGHT;
             break;
         case 2:
-            draw_block(curr_tet.x, curr_tet.y, TET_COLOR_S);
-            draw_block(curr_tet.x, curr_tet.y + BLOCK_WIDTH, TET_COLOR_S);
-            draw_block(curr_tet.x + BLOCK_WIDTH, curr_tet.y, TET_COLOR_S);
-            draw_block(curr_tet.x - BLOCK_WIDTH, curr_tet.y + BLOCK_WIDTH, TET_COLOR_S);
+            curr_tet.blocks[0].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[0].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[1].x = curr_tet.x;
+            curr_tet.blocks[1].y = curr_tet.y + 2*BLOCK_HEIGHT;
+            curr_tet.blocks[2].x = curr_tet.x + 2*BLOCK_WIDTH;
+            curr_tet.blocks[2].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[3].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[3].y = curr_tet.y + 2*BLOCK_HEIGHT;
             break;
         case 3:
-            draw_block(curr_tet.x, curr_tet.y, TET_COLOR_S);
-            draw_block(curr_tet.x - BLOCK_WIDTH, curr_tet.y, TET_COLOR_S);
-            draw_block(curr_tet.x, curr_tet.y + BLOCK_WIDTH, TET_COLOR_S);
-            draw_block(curr_tet.x - BLOCK_WIDTH, curr_tet.y - BLOCK_WIDTH, TET_COLOR_S);
+            curr_tet.blocks[0].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[0].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[1].x = curr_tet.x;
+            curr_tet.blocks[1].y = curr_tet.y;
+            curr_tet.blocks[2].x = curr_tet.x;
+            curr_tet.blocks[2].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[3].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[3].y = curr_tet.y + 2*BLOCK_HEIGHT;
             break;
         default:
             break;
@@ -656,64 +626,102 @@ void set_tet_s()
 
 void set_tet_z()
 {
+    int i;
+    for (i = 0; i < 4; i++)
+        curr_tet.blocks[i].c = TET_COLOR_Z;
     switch (curr_tet.r)
     {
-        case 0:
-            draw_block(curr_tet.x, curr_tet.y, TET_COLOR_Z);
-            draw_block(curr_tet.x + BLOCK_WIDTH, curr_tet.y, TET_COLOR_Z);
-            draw_block(curr_tet.x, curr_tet.y - BLOCK_WIDTH, TET_COLOR_Z);
-            draw_block(curr_tet.x - BLOCK_WIDTH, curr_tet.y - BLOCK_WIDTH, TET_COLOR_Z);
-            break;
-        case 1:
-            draw_block(curr_tet.x, curr_tet.y, TET_COLOR_Z);
-            draw_block(curr_tet.x + BLOCK_WIDTH, curr_tet.y, TET_COLOR_Z);
-            draw_block(curr_tet.x, curr_tet.y + BLOCK_WIDTH, TET_COLOR_Z);
-            draw_block(curr_tet.x + BLOCK_WIDTH, curr_tet.y - BLOCK_WIDTH, TET_COLOR_Z);
-            break;
-        case 2:
-            draw_block(curr_tet.x, curr_tet.y, TET_COLOR_Z);
-            draw_block(curr_tet.x, curr_tet.y + BLOCK_WIDTH, TET_COLOR_Z);
-            draw_block(curr_tet.x - BLOCK_WIDTH, curr_tet.y, TET_COLOR_Z);
-            draw_block(curr_tet.x + BLOCK_WIDTH, curr_tet.y + BLOCK_WIDTH, TET_COLOR_Z);
-            break;
-        case 3:
-            draw_block(curr_tet.x, curr_tet.y, TET_COLOR_Z);
-            draw_block(curr_tet.x - BLOCK_WIDTH, curr_tet.y, TET_COLOR_Z);
-            draw_block(curr_tet.x, curr_tet.y - BLOCK_WIDTH, TET_COLOR_Z);
-            draw_block(curr_tet.x - BLOCK_WIDTH, curr_tet.y + BLOCK_WIDTH, TET_COLOR_Z);
-            break;
-        default:
-            break;
-    }
+            case 0:
+                curr_tet.blocks[0].x = curr_tet.x + BLOCK_WIDTH;
+                curr_tet.blocks[0].y = curr_tet.y + BLOCK_HEIGHT;
+                curr_tet.blocks[1].x = curr_tet.x;
+                curr_tet.blocks[1].y = curr_tet.y;
+                curr_tet.blocks[2].x = curr_tet.x + 2*BLOCK_WIDTH;
+                curr_tet.blocks[2].y = curr_tet.y + BLOCK_HEIGHT;
+                curr_tet.blocks[3].x = curr_tet.x + BLOCK_WIDTH;
+                curr_tet.blocks[3].y = curr_tet.y;
+                break;
+            case 1:
+                curr_tet.blocks[0].x = curr_tet.x + BLOCK_WIDTH;
+                curr_tet.blocks[0].y = curr_tet.y + BLOCK_HEIGHT;
+                curr_tet.blocks[1].x = curr_tet.x + BLOCK_WIDTH;
+                curr_tet.blocks[1].y = curr_tet.y + 2*BLOCK_HEIGHT;
+                curr_tet.blocks[2].x = curr_tet.x + 2*BLOCK_WIDTH;
+                curr_tet.blocks[2].y = curr_tet.y + BLOCK_HEIGHT;
+                curr_tet.blocks[3].x = curr_tet.x + 2*BLOCK_WIDTH;
+                curr_tet.blocks[3].y = curr_tet.y;
+                break;
+            case 2:
+                curr_tet.blocks[0].x = curr_tet.x + BLOCK_WIDTH;
+                curr_tet.blocks[0].y = curr_tet.y + BLOCK_HEIGHT;
+                curr_tet.blocks[1].x = curr_tet.x;
+                curr_tet.blocks[1].y = curr_tet.y + BLOCK_HEIGHT;
+                curr_tet.blocks[2].x = curr_tet.x + BLOCK_WIDTH;
+                curr_tet.blocks[2].y = curr_tet.y + 2*BLOCK_HEIGHT;
+                curr_tet.blocks[3].x = curr_tet.x + 2*BLOCK_WIDTH;
+                curr_tet.blocks[3].y = curr_tet.y + 2*BLOCK_HEIGHT;
+                break;
+            case 3:
+                curr_tet.blocks[0].x = curr_tet.x + BLOCK_WIDTH;
+                curr_tet.blocks[0].y = curr_tet.y + BLOCK_HEIGHT;
+                curr_tet.blocks[1].x = curr_tet.x;
+                curr_tet.blocks[1].y = curr_tet.y + 2*BLOCK_HEIGHT;
+                curr_tet.blocks[2].x = curr_tet.x;
+                curr_tet.blocks[2].y = curr_tet.y + BLOCK_HEIGHT;
+                curr_tet.blocks[3].x = curr_tet.x + BLOCK_WIDTH;
+                curr_tet.blocks[3].y = curr_tet.y;
+                break;
+            default:
+                break;
+        }
 }
 
 void set_tet_j()
 {
+    int i;
+    for (i = 0; i < 4; i++)
+        curr_tet.blocks[i].c = TET_COLOR_J;
     switch (curr_tet.r)
     {
         case 0:
-            draw_block(curr_tet.x, curr_tet.y, TET_COLOR_J);
-            draw_block(curr_tet.x - BLOCK_WIDTH, curr_tet.y, TET_COLOR_J);
-            draw_block(curr_tet.x + BLOCK_WIDTH, curr_tet.y, TET_COLOR_J);
-            draw_block(curr_tet.x - BLOCK_WIDTH, curr_tet.y - BLOCK_WIDTH, TET_COLOR_J);
+            curr_tet.blocks[0].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[0].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[1].x = curr_tet.x;
+            curr_tet.blocks[1].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[2].x = curr_tet.x + 2*BLOCK_WIDTH;
+            curr_tet.blocks[2].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[3].x = curr_tet.x;
+            curr_tet.blocks[3].y = curr_tet.y;
             break;
         case 1:
-            draw_block(curr_tet.x, curr_tet.y, TET_COLOR_J);
-            draw_block(curr_tet.x, curr_tet.y + BLOCK_WIDTH, TET_COLOR_J);
-            draw_block(curr_tet.x, curr_tet.y - BLOCK_WIDTH, TET_COLOR_J);
-            draw_block(curr_tet.x + BLOCK_WIDTH, curr_tet.y - BLOCK_WIDTH, TET_COLOR_J);
+            curr_tet.blocks[0].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[0].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[1].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[1].y = curr_tet.y;
+            curr_tet.blocks[2].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[2].y = curr_tet.y + 2*BLOCK_HEIGHT;
+            curr_tet.blocks[3].x = curr_tet.x + 2*BLOCK_WIDTH;
+            curr_tet.blocks[3].y = curr_tet.y;
             break;
         case 2:
-            draw_block(curr_tet.x, curr_tet.y, TET_COLOR_J);
-            draw_block(curr_tet.x - BLOCK_WIDTH, curr_tet.y, TET_COLOR_J);
-            draw_block(curr_tet.x + BLOCK_WIDTH, curr_tet.y, TET_COLOR_J);
-            draw_block(curr_tet.x + BLOCK_WIDTH, curr_tet.y + BLOCK_WIDTH, TET_COLOR_J);
+            curr_tet.blocks[0].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[0].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[1].x = curr_tet.x;
+            curr_tet.blocks[1].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[2].x = curr_tet.x + 2*BLOCK_WIDTH;
+            curr_tet.blocks[2].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[3].x = curr_tet.x + 2*BLOCK_WIDTH;
+            curr_tet.blocks[3].y = curr_tet.y + 2*BLOCK_HEIGHT;
             break;
         case 3:
-            draw_block(curr_tet.x, curr_tet.y, TET_COLOR_J);
-            draw_block(curr_tet.x, curr_tet.y + BLOCK_WIDTH, TET_COLOR_J);
-            draw_block(curr_tet.x, curr_tet.y - BLOCK_WIDTH, TET_COLOR_J);
-            draw_block(curr_tet.x - BLOCK_WIDTH, curr_tet.y + BLOCK_WIDTH, TET_COLOR_J);
+            curr_tet.blocks[0].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[0].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[1].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[1].y = curr_tet.y;
+            curr_tet.blocks[2].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[2].y = curr_tet.y + 2*BLOCK_HEIGHT;
+            curr_tet.blocks[3].x = curr_tet.x;
+            curr_tet.blocks[3].y = curr_tet.y + 2*BLOCK_HEIGHT;
             break;
         default:
             break;
@@ -722,31 +730,50 @@ void set_tet_j()
 
 void set_tet_l()
 {
+    int i;
+    for (i = 0; i < 4; i++)
+        curr_tet.blocks[i].c = TET_COLOR_L;
     switch (curr_tet.r)
     {
         case 0:
-            draw_block(curr_tet.x, curr_tet.y, TET_COLOR_L);
-            draw_block(curr_tet.x - BLOCK_WIDTH, curr_tet.y, TET_COLOR_L);
-            draw_block(curr_tet.x + BLOCK_WIDTH, curr_tet.y, TET_COLOR_L);
-            draw_block(curr_tet.x + BLOCK_WIDTH, curr_tet.y - BLOCK_WIDTH, TET_COLOR_L);
+            curr_tet.blocks[0].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[0].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[1].x = curr_tet.x;
+            curr_tet.blocks[1].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[2].x = curr_tet.x + 2*BLOCK_WIDTH;
+            curr_tet.blocks[2].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[3].x = curr_tet.x + 2*BLOCK_WIDTH;
+            curr_tet.blocks[3].y = curr_tet.y;
             break;
         case 1:
-            draw_block(curr_tet.x, curr_tet.y, TET_COLOR_L);
-            draw_block(curr_tet.x, curr_tet.y + BLOCK_WIDTH, TET_COLOR_L);
-            draw_block(curr_tet.x, curr_tet.y - BLOCK_WIDTH, TET_COLOR_L);
-            draw_block(curr_tet.x + BLOCK_WIDTH, curr_tet.y + BLOCK_WIDTH, TET_COLOR_L);
+            curr_tet.blocks[0].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[0].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[1].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[1].y = curr_tet.y;
+            curr_tet.blocks[2].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[2].y = curr_tet.y + 2*BLOCK_HEIGHT;
+            curr_tet.blocks[3].x = curr_tet.x + 2*BLOCK_WIDTH;
+            curr_tet.blocks[3].y = curr_tet.y + 2*BLOCK_HEIGHT;
             break;
         case 2:
-            draw_block(curr_tet.x, curr_tet.y, TET_COLOR_L);
-            draw_block(curr_tet.x - BLOCK_WIDTH, curr_tet.y, TET_COLOR_L);
-            draw_block(curr_tet.x + BLOCK_WIDTH, curr_tet.y, TET_COLOR_L);
-            draw_block(curr_tet.x - BLOCK_WIDTH, curr_tet.y + BLOCK_WIDTH, TET_COLOR_L);
+            curr_tet.blocks[0].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[0].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[1].x = curr_tet.x;
+            curr_tet.blocks[1].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[2].x = curr_tet.x + 2*BLOCK_WIDTH;
+            curr_tet.blocks[2].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[3].x = curr_tet.x;
+            curr_tet.blocks[3].y = curr_tet.y + 2*BLOCK_HEIGHT;
             break;
         case 3:
-            draw_block(curr_tet.x, curr_tet.y, TET_COLOR_L);
-            draw_block(curr_tet.x, curr_tet.y + BLOCK_WIDTH, TET_COLOR_L);
-            draw_block(curr_tet.x, curr_tet.y - BLOCK_WIDTH, TET_COLOR_L);
-            draw_block(curr_tet.x - BLOCK_WIDTH, curr_tet.y - BLOCK_WIDTH, TET_COLOR_L);
+            curr_tet.blocks[0].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[0].y = curr_tet.y + BLOCK_HEIGHT;
+            curr_tet.blocks[1].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[1].y = curr_tet.y;
+            curr_tet.blocks[2].x = curr_tet.x + BLOCK_WIDTH;
+            curr_tet.blocks[2].y = curr_tet.y + 2*BLOCK_HEIGHT;
+            curr_tet.blocks[3].x = curr_tet.x;
+            curr_tet.blocks[3].y = curr_tet.y;
             break;
         default:
             break;

@@ -92,28 +92,6 @@ int draw_unchained()
     return 0;
 }
 
-int display_vga(char* buf)
-{
-    // set processor to vga mode
-    struct regs16 regs = { .ax = 0x13};
-    pushcli();
-    pte_t original = biosmap();
-    int32(0x10, &regs);  
-    biosunmap(original);
-    popcli();
-
-    //int i;
-    //for (i = 0; i < 320*200; i++)
-    //    buf[i] = 1;
-
-    // write the vga with the input buffer
-    memmove((char *)P2V(0xA0000), buf, (320*200));
-    //cprintf("%d + %d = %d\n", 2, 3, add(2, 3));
-    //cprintf("%d\n", draw(buf, (char *)P2V(0xA0000)));
-
-    return 0;
-}
-
 int display_text()
 {
     // set processor to text mode

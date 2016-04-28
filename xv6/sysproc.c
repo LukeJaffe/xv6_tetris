@@ -97,57 +97,52 @@ sys_uptime(void)
 int 
 sys_tetris(void)
 {
-    int alive = 1;
-
+    // set VGA display mode
     vga_mode();
 
+    // set up the array of locked blocks
     init_blocks();
 
+    // create the first tet at top of screen
     new_tet(ticks);
 
+    // tell interrupt handler that game has started
     start_tetris = 1;
+
+    // loop until alive is 0
+    int alive = 1;
     while (alive)
     {
         // move the curr tet down one row
-        if (move_tet(TET_MOVE_DOWN))
+        int code = move_tet(TET_MOVE_DOWN);
+
+        // nothing blocking the curr tet
+        if (code == 0)
+        {
+            // update the display buffer
+            update_screen();
+
+            // write the display buffer to the vga
+            draw_unchained();
+
+            // wait 1 tick
+            syssleep(50);
+        }
+        // tet locked on non-top row spawns new tet
+        else if (code == 1)
+        {
             new_tet(ticks);
-
-        // update the display buffer
-        update_screen();
-
-        // write the display buffer to the vga
-        draw_unchained();
-
-        // sleep
-        syssleep(20);
+        }
+        // tet locked on top row is losing condition
+        else if (code == -1)
+        {
+            alive = 0;
+        }
     }
 
+    // switch back to text mode
     display_text();
-    return 0;
-}
 
-/*
-int
-sys_clearscreen(void)
-{
-    clear_screen();
-    return 0;
+    // return score to user
+    return get_score();
 }
-
-int
-sys_updatescreen(void)
-{
-    int tptr;
-    if(argint(0, &tptr) < 0)
-        return -1;
-
-    ((tet_t*)tptr)->r = tet_r;
-    draw_tet((tet_t*)tptr);
-    return 0;
-}
-
-int
-sys_drawscreen(void)
-{
-}
-*/

@@ -41,7 +41,7 @@ typedef enum
     TET_COLOR_T = 34,
     TET_COLOR_S = 47,
     TET_COLOR_Z = 40,
-    TET_COLOR_J = 2,
+    TET_COLOR_J = 1,
     TET_COLOR_L = 42,
     NUM_TET_COLORS
 } tet_color_t;
@@ -91,3 +91,4 @@ int move_tet(tet_move_t tet_move);
 void bounds_tet();
 void draw_tet();
 void init_blocks();
+int get_score();
